@@ -6,17 +6,31 @@ final recorder = AudioRecorder();
 final player = AudioPlayer();
 
 
-
 void main() {
   recorderSetup();
+
   runApp(const MyApp());
 }
 
 void recorderSetup() async {
+  print('----------------------- False');
   if (await recorder.hasPermission()) {
+
+    print("------------------_>has permission");
     final micStream = await recorder.startStream(const RecordConfig());
+    await player.setSourceBytes(await micStream.last);
   }
+  else {
+    print('----------------------- False');
+  }
+
 }
+
+void clearMem() {
+  player.dispose();
+  recorder.dispose();
+}
+
 
 
 
@@ -52,7 +66,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MyHomePage extends StatelessWidget {
+class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
 
   // This widget is the home page of your application. It is stateful, meaning
@@ -65,6 +79,24 @@ class MyHomePage extends StatelessWidget {
   // always marked "final".
 
   final String title;
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+
+  bool _playing = false;
+  void _updateState() {
+    setState(() {
+      _playing = !_playing;
+    });
+    if (_playing) {
+      player.resume();
+    }
+    else {
+      player.pause();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -82,9 +114,9 @@ class MyHomePage extends StatelessWidget {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
-        title: Text(title),
+        title: Text(widget.title),
       ),
-      body: Center(
+      body:  Center(
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
         child: Column(
@@ -104,12 +136,13 @@ class MyHomePage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             const Text(
-              'You have pushed the button this many times:',
+              'Click the below button to play and pause audio',
             ),
+            IconButton(onPressed: _updateState, icon: const Icon(Icons.play_arrow)),
             Text(
-              'Hello World',
-              style: Theme.of(context).textTheme.headlineMedium,
+              '$_playing'
             ),
+            const IconButton(onPressed: clearMem, icon: Icon(Icons.duo))
           ],
         ),
       ),
