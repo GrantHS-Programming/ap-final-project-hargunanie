@@ -1,37 +1,15 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:record/record.dart';
 import 'package:audioplayers/audioplayers.dart';
 
-final recorder = AudioRecorder();
-final player = AudioPlayer();
+
 
 
 void main() {
-  recorderSetup();
-
   runApp(const MyApp());
 }
-
-void recorderSetup() async {
-  print('----------------------- False');
-  if (await recorder.hasPermission()) {
-
-    print("------------------_>has permission");
-    final micStream = await recorder.startStream(const RecordConfig());
-    await player.setSourceBytes(await micStream.last);
-  }
-  else {
-    print('----------------------- False');
-  }
-
-}
-
-void clearMem() {
-  player.dispose();
-  recorder.dispose();
-}
-
-
 
 
 class MyApp extends StatelessWidget {
@@ -43,25 +21,11 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
+
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'Audio Playback'),
     );
   }
 }
@@ -69,14 +33,7 @@ class MyApp extends StatelessWidget {
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
 
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
 
   final String title;
   @override
@@ -85,64 +42,69 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
 
-  bool _playing = false;
-  void _updateState() {
-    setState(() {
-      _playing = !_playing;
-    });
-    if (_playing) {
-      player.resume();
-    }
-    else {
-      player.pause();
-    }
+  late AudioRecorder rec;
+  late AudioPlayer player;
+  late Stream<Uint8List> audio;
+  bool playing = false;
+
+  @override
+  void initState() {
+    player = AudioPlayer();
+    rec = AudioRecorder();
+    super.initState();
   }
 
   @override
+  void dispose() {
+    player.dispose();
+    rec.dispose();
+    super.dispose();
+  }
+
+  Future<void> startPlayback() async{
+    try{
+      if(await rec.hasPermission() && !playing){
+        audio = await rec.startStream(const RecordConfig(encoder: AudioEncoder.pcm16bits));
+        setState(() {
+          playing = true;
+        });
+      }
+    }
+        catch(e){
+          print('error: $e');
+        }
+  }
+
+  Future<void> stopPlayback() async{
+    try{
+      await rec.stop();
+      setState(() {
+        playing = false;
+      });
+    }
+    catch(e){
+      print('error: $e');
+    }
+  }
+
+
+  @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
+
     return Scaffold(
       appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
+
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
+
         title: Text(widget.title),
       ),
       body:  Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
+
         child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text(
-              'Click the below button to play and pause audio',
-            ),
-            IconButton(onPressed: _updateState, icon: const Icon(Icons.play_arrow)),
-            Text(
-              '$_playing'
-            ),
-            const IconButton(onPressed: clearMem, icon: Icon(Icons.duo))
+            ElevatedButton(onPressed: startPlayback, child: const Text('Play audio')),
+            ElevatedButton(onPressed: stopPlayback, child: const Text('Stop audio')),
           ],
         ),
       ),
