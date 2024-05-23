@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -22,7 +23,8 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       theme: ThemeData(
 
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromRGBO(
+            0, 79, 33, 1.0)),
         useMaterial3: true,
       ),
       home: const MyHomePage(title: 'Audio Playback'),
@@ -42,6 +44,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
 
+  final audioControl = StreamController();
   late AudioRecorder rec;
   late AudioPlayer player;
   late Stream<Uint8List> audio;
@@ -64,20 +67,24 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> startPlayback() async{
     try{
       if(await rec.hasPermission() && !playing){
-        audio = await rec.startStream(const RecordConfig(encoder: AudioEncoder.pcm16bits));
+        await audioControl.addStream(await rec.startStream(const RecordConfig(encoder: AudioEncoder.pcm16bits)));
+        print(audio.isBroadcast);
+
+
         setState(() {
           playing = true;
         });
       }
     }
-        catch(e){
-          print('error: $e');
-        }
+    catch(e){
+      print('error: $e');
+    }
   }
 
   Future<void> stopPlayback() async{
     try{
       await rec.stop();
+      await player.stop();
       setState(() {
         playing = false;
       });
@@ -94,9 +101,9 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: AppBar(
 
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        backgroundColor: Theme.of(context).colorScheme.tertiary,
 
-        title: Text(widget.title),
+        title: Text(widget.title, style: const TextStyle(color: Colors.white)),
       ),
       body:  Center(
 
