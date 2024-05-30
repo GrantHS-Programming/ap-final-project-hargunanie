@@ -62,9 +62,9 @@ class _MyHomePageState extends State<MyHomePage> {
       if (await rec.hasPermission() && !playing) {
         //await audioControl.addStream(await rec.startStream(const RecordConfig(encoder: AudioEncoder.pcm16bits)));
         audio = await rec
-            .startStream(const RecordConfig(encoder: AudioEncoder.pcm16bits));
+            .startStream(const RecordConfig(encoder: AudioEncoder.aacLc));
         print(audio.isBroadcast);
-        final audioSubscription = audio.listen((data) => player.play(BytesSource(data)));
+        final audioSubscription = audio.listen((data) => playBytes(data));
 
         setState(() {
           playing = true;
@@ -75,6 +75,16 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  void playBytes(Uint8List st) async {
+    try {
+      await player.setSourceBytes(st);
+      player.resume;
+    }
+    catch (e) {
+      print("could not start audio: $e");
+    }
+    //print(st);
+  }
   Future<void> stopPlayback() async {
     try {
       await rec.stop();
