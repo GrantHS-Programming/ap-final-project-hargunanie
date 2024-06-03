@@ -3,7 +3,8 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:record/record.dart';
-import 'package:audioplayers/audioplayers.dart';
+//import 'package:audioplayers/audioplayers.dart';
+import 'package:just_audio/just_audio.dart';
 
 void main() {
   runApp(const MyApp());
@@ -58,6 +59,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> startPlayback() async {
+    //await player.play(UrlSource('https://hargunanie.github.io/assets/jazz.mp3'));
     try {
       if (await rec.hasPermission() && !playing) {
         //await audioControl.addStream(await rec.startStream(const RecordConfig(encoder: AudioEncoder.pcm16bits)));
@@ -77,8 +79,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void playBytes(Uint8List st) async {
     try {
-      await player.setSourceBytes(st);
-      player.resume;
+      await player.play(BytesSource(st));
     }
     catch (e) {
       print("could not start audio: $e");
