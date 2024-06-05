@@ -28,6 +28,27 @@ class MyApp extends StatelessWidget {
   }
 }
 
+class MyCustomSource extends StreamAudioSource {
+  final Stream<Uint8List> _byteStream;
+  MyCustomSource(this._byteStream);
+
+  @override
+  Future<StreamAudioResponse> request([int? start, int? end]) async {
+
+    start ??= 0;
+
+    final chunk = await _byteStream.skip(start).take (end ?? -1).first;
+
+    return StreamAudioResponse(
+      sourceLength: -1,
+      contentLength: chunk.length,
+      offset: start,
+      stream: Stream.value(chunk),
+      contentType: 'audio/mpeg',
+    );
+  }
+}
+
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
 
@@ -66,7 +87,10 @@ class _MyHomePageState extends State<MyHomePage> {
         audio = await rec
             .startStream(const RecordConfig(encoder: AudioEncoder.aacLc));
         print(audio.isBroadcast);
-        final audioSubscription = audio.listen((data) => playBytes(data));
+        //final audioSubscription = audio.listen((data) => playBytes(data));
+        await player.setAudioSource(MyCustomSource(audio));
+        player.play();
+
 
         setState(() {
           playing = true;
@@ -77,15 +101,16 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  void playBytes(Uint8List st) async {
+  /*void playBytes(Uint8List st) async {
     try {
-      await player.play(BytesSource(st));
+
     }
     catch (e) {
       print("could not start audio: $e");
     }
     //print(st);
-  }
+  }*/
+
   Future<void> stopPlayback() async {
     try {
       await rec.stop();
