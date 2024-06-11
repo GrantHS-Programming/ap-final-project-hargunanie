@@ -3,7 +3,6 @@ package com.example.openstatik.recorder
 import android.content.Context
 import android.media.MediaRecorder
 import android.os.Build
-import androidx.compose.material3.MediumTopAppBar
 import java.io.File
 import java.io.FileOutputStream
 
@@ -25,7 +24,18 @@ class AndroidAudioRecorder(private val context: Context): AudioRecorder {
             setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
             setOutputFile(FileOutputStream(outputFile).fd)
 
+            prepare()
+            start()
+
+            recorder = this
+
         }
+    }
+
+    override fun stop() {
+        recorder?.stop()
+        recorder?.reset()
+        recorder = null
     }
 
 
