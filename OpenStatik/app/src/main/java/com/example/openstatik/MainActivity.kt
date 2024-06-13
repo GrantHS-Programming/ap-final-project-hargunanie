@@ -58,6 +58,7 @@ class MainActivity : ComponentActivity() {
                     Button(onClick = { player.stop() }) {
                         Text(text = "stop playing")
                     }
+                    Text("I did stuff on June 13th. This is not a joke")
 
                 }
                 //  surface container using the 'background' color from the theme
