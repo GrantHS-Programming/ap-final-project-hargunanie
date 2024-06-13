@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color.fromRGBO(0, 79, 33, 1.0)),
+            seedColor: const Color.fromRGBO(153, 248, 51, 1.0)),
         useMaterial3: true,
       ),
       home: const MyHomePage(title: 'Audio Playback'),
@@ -123,11 +123,14 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  void printHello() {
+    print("Hello");
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.tertiary,
+        backgroundColor: const Color.fromRGBO(153, 0, 51, 1.0),
         title: Text(widget.title, style: const TextStyle(color: Colors.white)),
       ),
       body: Center(
@@ -135,9 +138,14 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             ElevatedButton(
-                onPressed: startPlayback, child: const Text('Play audio')),
+              onPressed: startPlayback,
+              child: const Text('Play audio'),
+
+
+            ),
             ElevatedButton(
-                onPressed: stopPlayback, child: const Text('Stop audio')),
+                onPressed: stopPlayback, child: const Text('Stoap audio')),
+            ElevatedButton(onPressed: printHello, child: const Text("See what happens!!!!!"))
           ],
         ),
       ),
